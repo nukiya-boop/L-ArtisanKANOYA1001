@@ -3,7 +3,7 @@
 ある日のディナーより「黄人参、たいら貝、シナモンリーフ」
 
 使い方:
-    python3 video/make_reel.py --fonts <フォントディレクトリ> --out video/reel.mp4
+    python3 video/make_reel.py --fonts <フォントディレクトリ> --music <BGM.mp3> --out video/reel.mp4
 
 必要: Pillow, numpy, imageio-ffmpeg
 フォント（Google Fonts / OFL）: Shippori Mincho (Regular, Medium), Cormorant Garamond (Regular, Italic)
@@ -400,6 +400,7 @@ def main():
     ap.add_argument("--out", default=os.path.join(ROOT, "video", "reel.mp4"))
     ap.add_argument("--stills", help="確認用: カンマ区切りの秒数で PNG を書き出す")
     ap.add_argument("--workers", type=int, default=os.cpu_count())
+    ap.add_argument("--music", help="BGM（先頭から30秒を使用し、終わりをフェードアウト）")
     args = ap.parse_args()
 
     if args.stills:
@@ -415,10 +416,13 @@ def main():
     import imageio_ffmpeg
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
     cmd = [ffmpeg, "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
-           "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=48000",
-           "-map", "0:v", "-map", "1:a", "-shortest",
+           *(["-i", args.music] if args.music else
+             ["-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=48000"]),
+           "-map", "0:v", "-map", "1:a", "-t", str(DURATION),
+           "-af", f"atrim=0:{DURATION},asetpts=PTS-STARTPTS,afade=t=in:st=0:d=0.3,"
+                  f"afade=t=out:st={DURATION - 2.6}:d=2.6,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000",
            "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-maxrate", "10M", "-bufsize", "20M", "-profile:v", "high", "-pix_fmt", "yuv420p",
-           "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", args.out]
+           "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", args.out]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.DEVNULL)
     with Pool(args.workers, initializer=init_worker, initargs=(args.fonts,)) as pool:
         for k, data in enumerate(pool.imap(render_frame, range(NFRAMES), chunksize=4)):
