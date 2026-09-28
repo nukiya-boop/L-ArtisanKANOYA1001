@@ -275,7 +275,7 @@ def build_captions():
 
     # 2. 情景コピー（縦書き）
     caps.append(Caption(B[1] + 0.3, B[2] - 0.1, [
-        layout("闇に灯る、", "jp", 58, 930, 240, vertical=True, tracking=0.18),
+        layout("目にも鮮やかな、", "jp", 58, 930, 240, vertical=True, tracking=0.18),
         layout("季節の彩り。", "jp", 58, 840, 330, vertical=True, tracking=0.18),
     ], stagger=0.08, fade=0.8))
 
@@ -306,7 +306,7 @@ def build_captions():
         layout("四季を纏う、奈良の恵み。", "jp", 50, W / 2, 380, tracking=0.22),
     ], stagger=0.06, fade=0.8))
     caps.append(Caption(B[6] + 0.3, B[7] - 0.05, [
-        layout("フランスの感性で、", "jp", 50, W / 2, 330, tracking=0.22),
+        layout("フランス料理の感性で、", "jp", 50, W / 2, 330, tracking=0.22),
         layout("ひと皿に。", "jp", 50, W / 2, 420, tracking=0.22),
     ], stagger=0.06, fade=0.8))
 
